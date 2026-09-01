@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import MainHeader from "@/components/layout/MainHeader";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
     return (
@@ -31,34 +31,12 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="favorite/index"
                 options={{
-                    title: "즐겨찾기",
+                    title: "마이페이지",
                     tabBarIcon: ({ color }) => <Ionicons name="star" size={24} color={color} />,
-                }}
-            />
-
-            <Tabs.Screen
-                name="my/index"
-                options={{
-                    title: "마이",
-                    tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
-                }}
-            />
-
-            <Tabs.Screen
-                name="auth/login/index"
-                options={{
-                    href: null,
-                    title: "로그인",
-                }}
-            />
-
-            <Tabs.Screen
-                name="auth/signup/index"
-                options={{
-                    href: null,
-                    title: "회원가입",
                 }}
             />
         </Tabs>
     );
 }
+
+export default TabLayout;
