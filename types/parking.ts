@@ -7,6 +7,7 @@ export interface ParkingLot {
     name: string;
     parkingLotSe: string | null; // 공영/민영 등
     parkingLotType: string | null; // 노상/노외 등
+    roadAddress: string | null;
     landAddress: string | null;
     latitude: number;
     longitude: number;

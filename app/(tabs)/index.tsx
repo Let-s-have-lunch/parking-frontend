@@ -1,17 +1,27 @@
 import { ActivityIndicator, View, Text } from "react-native";
 import * as Location from "expo-location";
-import { useEffect, useState } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { BoundsParams, ParkingLot } from "@/types/parking";
 import KakaoMap from "../../components/common/map/KakaoMap";
 import parkingApi from "@/api/general/parkingApi";
 import ParkingLotDetailPanel from "@/components/common/modal/ParkingLotDetailPanel";
+import { useLocalSearchParams } from "expo-router";
 
 export default function MapScreen() {
+    const { targetLat, targetLng, targetLotId } = useLocalSearchParams();
     const [parkingLots, setParkingLots] = useState<ParkingLot[]>([]);
     const [initialLocation, setInitialLocation] = useState<{ lat: number; lng: number } | null>(
         null,
     );
+
+    useEffect(() => {
+        if (targetLat && targetLng && targetLotId) {
+            // 1. 지도 중심을 targetLat, targetLng로 이동
+            setInitialLocation({ lat: Number(targetLat), lng: Number(targetLng) });
+            // 2. 전달받은 주차장 아이디를 세팅하여 바텀 시트 오픈
+            setSelectedLotId(Number(targetLotId));
+        }
+    }, [targetLat, targetLng, targetLotId]);
 
     const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
     const [selectedLotData, setSelectedLotData] = useState<ParkingLot | null>(null);
@@ -33,6 +43,7 @@ export default function MapScreen() {
 
                 // 2. 현재 위치 가져오기
                 const location = await Location.getCurrentPositionAsync({});
+
                 if (isMounted) {
                     setInitialLocation({
                         lat: location.coords.latitude,
