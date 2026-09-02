@@ -1,9 +1,9 @@
-import { User } from "@/types/user";
+import { type User } from "../../types/user";
 import { create } from "zustand";
-import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 
 type UserState = {
     isLoggedIn: boolean;
