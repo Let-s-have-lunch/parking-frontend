@@ -9,6 +9,7 @@ type UserState = {
     isLoggedIn: boolean;
     token: string | null;
     user: User | null;
+    isInitialized: boolean;
 
     login: (user: User, token: string) => Promise<void>;
     logout: () => Promise<void>;
@@ -69,6 +70,7 @@ export const useUserStore = create<UserState>()(
             isLoggedIn: false,
             token: null,
             user: null,
+            isInitialized: false,
 
             login: async (user, token) => {
                 await saveAccessToken(token);
@@ -77,6 +79,7 @@ export const useUserStore = create<UserState>()(
                     isLoggedIn: true,
                     token,
                     user,
+                    isInitialized: true,
                 });
             },
 
@@ -87,6 +90,7 @@ export const useUserStore = create<UserState>()(
                     isLoggedIn: false,
                     token: null,
                     user: null,
+                    isInitialized: true,
                 });
             },
 
@@ -112,6 +116,7 @@ export const useUserStore = create<UserState>()(
                         isLoggedIn: false,
                         token: null,
                         user: null,
+                        isInitialized: true,
                     });
                     return;
                 }
@@ -126,6 +131,7 @@ export const useUserStore = create<UserState>()(
                         isLoggedIn: true,
                         token,
                         user,
+                        isInitialized: true,
                     });
                 } catch (error) {
                     console.error("로그인 복원 실패:", error);
@@ -135,6 +141,7 @@ export const useUserStore = create<UserState>()(
                         isLoggedIn: false,
                         token: null,
                         user: null,
+                        isInitialized: true,
                     });
                 }
             },

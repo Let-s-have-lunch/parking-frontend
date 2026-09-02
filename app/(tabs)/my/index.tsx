@@ -1,10 +1,18 @@
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Href, Redirect } from "expo-router";
 import { useUserStore } from "@/stores/user/useUserStore";
 import Button from "@/components/common/button/Button";
 
 export default function MyPageScreen() {
-    const { isLoggedIn, user, logout } = useUserStore();
+    const { isLoggedIn, user, logout, isInitialized } = useUserStore();
+
+    if (!isInitialized) {
+        return (
+            <View className="flex-1 items-center justify-center bg-brand-surface">
+                <ActivityIndicator size="large" color="#2563EB" />
+            </View>
+        );
+    }
 
     if (!isLoggedIn) {
         return <Redirect href={"/auth/login" as Href} />;

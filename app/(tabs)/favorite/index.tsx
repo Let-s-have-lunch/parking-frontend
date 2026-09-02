@@ -6,20 +6,17 @@ import { ParkingLot } from "@/types/parking";
 import { useUserStore } from "@/stores/user/useUserStore";
 
 export default function FavoriteScreen() {
-    const { isLoggedIn, user, logout } = useUserStore();
-
-    if (!isLoggedIn) {
-        return <Redirect href={"/auth/login" as Href} />;
-    }
+    const { isLoggedIn, user, logout, isInitialized } = useUserStore();
 
     const router = useRouter();
     const [favorites, setFavorites] = useState<ParkingLot[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // 화면이 포커스될 때마다(탭 진입 시) 최신 즐겨찾기 목록을 불러옵니다.
     useFocusEffect(
         useCallback(() => {
+            if (!isLoggedIn) return;
+
             let isMounted = true;
 
             const fetchFavorites = async () => {
@@ -27,7 +24,6 @@ export default function FavoriteScreen() {
                 try {
                     const data = await favoriteApi.getMyFavorites();
                     if (isMounted) {
-                        // 불러온 목록은 모두 내 즐겨찾기이므로 isFavorite를 true로 강제 세팅합니다.
                         const initializedData: ParkingLot[] = data.map(lot => ({
                             ...lot,
                             favorite: true,
@@ -41,40 +37,48 @@ export default function FavoriteScreen() {
                 }
             };
 
-            fetchFavorites().then(() => {});
+            fetchFavorites().then(() => {})
 
             return () => {
                 isMounted = false;
             };
-        }, []),
+        }, [isLoggedIn]),
     );
 
-    // 검색어에 따른 필터링 (프론트엔드 단독 처리)
+    // 토큰 복구(초기화)가 완료될 때까지 로딩바를 보여주어 임시 튕김 현상 방지
+    if (!isInitialized) {
+        return (
+            <View className="flex-1 items-center justify-center bg-white">
+                <ActivityIndicator size="large" color="#2563EB" />
+            </View>
+        );
+    }
+
+    // 초기화 완료 후에도 로그인이 안 되어 있다면 로그인 페이지로 이동
+    if (!isLoggedIn) {
+        return <Redirect href={"/auth/login" as Href} />;
+    }
+
     const filteredFavorites = favorites.filter(lot => lot.name.includes(searchQuery));
 
-    // 즐겨찾기 토글 (실수 방지를 위해 목록에서 즉시 삭제하지 않고 별 모양만 바꿈)
     const handleToggleFavorite = async (id: number) => {
-        // 낙관적 업데이트: UI 먼저 변경
         setFavorites(prev =>
             prev.map(lot => (lot.id === id ? { ...lot, favorite: !lot.favorite } : lot)),
         );
 
         try {
             const newStatus = await favoriteApi.toggleFavorite(id);
-            // API 응답으로 최종 상태 확정
             setFavorites(prev =>
                 prev.map(lot => (lot.id === id ? { ...lot, isFavorite: newStatus } : lot)),
             );
         } catch (error) {
             console.error("즐겨찾기 상태 변경 실패:", error);
-            // 실패 시 롤백
             setFavorites(prev =>
                 prev.map(lot => (lot.id === id ? { ...lot, isFavorite: !lot.favorite } : lot)),
             );
         }
     };
 
-    // 주차장 항목 클릭 시 지도 탭으로 이동하며 파라미터 전달
     const handlePressItem = (lot: ParkingLot) => {
         router.navigate({
             pathname: "/",
@@ -86,7 +90,6 @@ export default function FavoriteScreen() {
         });
     };
 
-    // FlatList의 각 아이템 렌더링 함수
     const renderItem = ({ item }: { item: ParkingLot }) => (
         <TouchableOpacity
             activeOpacity={0.7}
@@ -97,7 +100,6 @@ export default function FavoriteScreen() {
                 <Text className="mt-1 text-sm text-gray-500 truncate">
                     {item.roadAddress || item.landAddress || "주소 정보 없음"}
                 </Text>
-                {/* 실시간 잔여면수가 있다면 작게 표시 */}
                 {item.hasRealtimeData && (
                     <Text className="mt-2 text-xs font-medium text-blue-600">
                         실시간 잔여: {item.currentAvailableSpots ?? "?"}대
@@ -105,7 +107,6 @@ export default function FavoriteScreen() {
                 )}
             </View>
 
-            {/* 토글 버튼 (버튼 터치 시 행 전체 클릭 이벤트를 막기 위해 뷰로 감싸거나 hitSlop 적용) */}
             <TouchableOpacity
                 activeOpacity={0.5}
                 onPress={() => handleToggleFavorite(item.id)}
@@ -121,7 +122,6 @@ export default function FavoriteScreen() {
 
     return (
         <View className="flex-1 bg-gray-50">
-            {/* 상단 검색 영역 */}
             <View className="px-5 pt-10 pb-4 bg-white border-b border-gray-200 shadow-sm">
                 <Text className="mb-4 text-2xl font-bold text-gray-800">즐겨찾는 주차장</Text>
                 <View className="flex-row items-center px-4 py-3 bg-gray-100 rounded-lg">
@@ -141,7 +141,6 @@ export default function FavoriteScreen() {
                 </View>
             </View>
 
-            {/* 목록 영역 */}
             {isLoading ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color="#2563EB" />
