@@ -46,17 +46,21 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
                         const container = document.getElementById('map');
                         const options = { 
                             center: new kakao.maps.LatLng(33.5104, 126.5222), 
-                            level: 5 
+                            level: 5,
+                            draggable: true,
+                            scrollwheel: true
                         };
                         map = new kakao.maps.Map(container, options);
 
                         clusterer = new kakao.maps.MarkerClusterer({
-                            map: map, averageCenter: true, minLevel: 6, disableClickZoom: true
+                            map: map, 
+                            averageCenter: true, 
+                            minLevel: 6, 
+                            disableClickZoom: true
                         });
 
                         kakao.maps.event.addListener(map, 'idle', function() {
                             sendBounds();
-                            
                     }   
 
                     function sendBounds() {
