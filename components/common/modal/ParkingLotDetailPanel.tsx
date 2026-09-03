@@ -24,17 +24,14 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
         if (!parkingLot || isToggling) return;
 
         setIsToggling(true);
-        // 낙관적 업데이트: API 요청 전에 UI부터 즉시 변경하여 빠른 반응성 제공
         const previousState = isFavorite;
         setIsFavorite(!previousState);
 
         try {
             const newFavoriteStatus = await favoriteApi.toggleFavorite(parkingLot.id);
-            // 서버 응답으로 최종 상태 확정
             setIsFavorite(newFavoriteStatus);
         } catch (error) {
             console.error("즐겨찾기 토글 실패:", error);
-            // 실패 시 원래 상태로 롤백
             setIsFavorite(previousState);
             alert("즐겨찾기 처리에 실패했습니다. 로그인이 필요할 수 있습니다.");
         } finally {
@@ -46,7 +43,7 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[85vh] bg-white shadow-2xl rounded-t-3xl md:w-96 md:bottom-5 md:left-5 md:rounded-2xl md:max-h-[85vh] transition-transform">
-            {/* ✨ 헤더 영역: 이름과 우측 버튼들(즐겨찾기, 닫기) 배치 */}
+            {/* 헤더 영역 */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-gray-800 truncate pr-4">
                     {isLoading ? "불러오는 중..." : parkingLot?.name}
@@ -79,19 +76,37 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
             ) : (
                 parkingLot && (
                     <div className="p-5 pb-24 overflow-y-auto">
-                        {/* 실시간 잔여 면수 하이라이트 */}
+                        {/* 실시간 잔여 면수 및 혼잡도 영역 */}
                         {parkingLot.hasRealtimeData && (
                             <div className="flex items-center justify-between p-4 mb-6 bg-blue-50 rounded-xl">
                                 <div>
                                     <p className="text-sm font-medium text-blue-600">
                                         실시간 잔여 주차면
                                     </p>
-                                    <p className="text-3xl font-black text-blue-700">
-                                        {parkingLot.currentAvailableSpots ?? "?"}{" "}
-                                        <span className="text-lg font-normal text-blue-600">
-                                            대
-                                        </span>
-                                    </p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-3xl font-black text-blue-700">
+                                            {parkingLot.currentAvailableSpots ?? "?"}{" "}
+                                            <span className="text-lg font-normal text-blue-600">
+                                                대
+                                            </span>
+                                        </p>
+                                        {/* 혼잡도 뱃지 */}
+                                        {parkingLot.congestionLevel === "CROWDED" && (
+                                            <span className="px-2 py-0.5 text-xs font-bold text-red-600 bg-red-100 rounded-md">
+                                                혼잡
+                                            </span>
+                                        )}
+                                        {parkingLot.congestionLevel === "NORMAL" && (
+                                            <span className="px-2 py-0.5 text-xs font-bold text-blue-600 bg-blue-100 rounded-md">
+                                                보통
+                                            </span>
+                                        )}
+                                        {parkingLot.congestionLevel === "SPACIOUS" && (
+                                            <span className="px-2 py-0.5 text-xs font-bold text-green-600 bg-green-100 rounded-md">
+                                                여유
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs text-gray-500">총 주차면수</p>
@@ -122,7 +137,6 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
                                 label="주소"
                                 value={parkingLot.roadAddress || parkingLot.landAddress}
                             />
-
                             <InfoRow
                                 label="운영시간"
                                 value={
@@ -131,7 +145,6 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
                                         : null
                                 }
                             />
-
                             <InfoRow
                                 label="요금 안내"
                                 value={
@@ -142,14 +155,12 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
                                           : null
                                 }
                             />
-
                             {parkingLot.addUnitTime && parkingLot.addUnitCharge && (
                                 <InfoRow
                                     label="추가 요금"
                                     value={`${parkingLot.addUnitTime}분당 ${parkingLot.addUnitCharge}원`}
                                 />
                             )}
-
                             <InfoRow
                                 label="일일 주차"
                                 value={
@@ -178,7 +189,6 @@ export default function ParkingLotDetailPanel({ parkingLot, isLoading, onClose }
     );
 }
 
-// 반복되는 행을 깔끔하게 렌더링하기 위한 내부 컴포넌트 (값이 없으면 렌더링하지 않음)
 const InfoRow = ({ label, value }: { label: string; value: string | null | undefined }) => {
     if (!value || value === "" || value === "null") return null;
     return (
