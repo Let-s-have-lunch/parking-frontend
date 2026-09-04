@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import MainHeader from "@/components/layout/MainHeader";
 import { Ionicons } from "@expo/vector-icons";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 export default function TabLayout() {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tabs
             screenOptions={{
@@ -10,9 +13,10 @@ export default function TabLayout() {
                 tabBarActiveTintColor: "#2563EB",
                 tabBarInactiveTintColor: "#9CA3AF",
                 tabBarStyle: {
-                    height: 60,
-                    paddingBottom: 10,
-                    paddingTop: 5,
+                    // 고정 높이를 덮어쓰거나 safe area 하단 여백을 더해줍니다.
+                    height: "auto",
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+                    paddingTop: 6,
                     backgroundColor: "#FFFFFF",
                 },
                 tabBarLabelStyle: {
@@ -27,7 +31,6 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <Ionicons name="map" size={24} color={color} />,
                 }}
             />
-
             <Tabs.Screen
                 name="favorite/index"
                 options={{
@@ -35,7 +38,6 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <Ionicons name="star" size={24} color={color} />,
                 }}
             />
-
             <Tabs.Screen
                 name="my/index"
                 options={{
@@ -43,7 +45,6 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
                 }}
             />
-
             <Tabs.Screen
                 name="auth/login/index"
                 options={{
@@ -51,7 +52,6 @@ export default function TabLayout() {
                     title: "로그인",
                 }}
             />
-
             <Tabs.Screen
                 name="auth/signup/index"
                 options={{
