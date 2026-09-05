@@ -25,7 +25,11 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
 
     return (
         <Map
-            center={{ lat: 33.5104, lng: 126.5222 }}
+            center={
+                initialLocation
+                    ? { lat: initialLocation.lat, lng: initialLocation.lng }
+                    : { lat: 37.5665, lng: 126.978 }
+            }
             style={{ width: "100%", height: "100%" }}
             level={5}
             // 💡 1. 지도가 처음 렌더링될 때 최초 1회 실행

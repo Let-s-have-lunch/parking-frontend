@@ -13,7 +13,12 @@ export interface KakaoMapProps {
 const NativeWebView = WebView as any;
 const KAKAO_JS_KEY = process.env.EXPO_PUBLIC_KAKAO_APP_KEY || "";
 
-export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation, onMarkerClick }: KakaoMapProps) {
+export default function KakaoMap({
+    parkingLots,
+    onBoundsChanged,
+    initialLocation,
+    onMarkerClick,
+}: KakaoMapProps) {
     const webviewRef = useRef<any>(null);
 
     useEffect(() => {
@@ -23,7 +28,7 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
         }
     }, [parkingLots]);
 
-    // 💡 핵심 해결책: initialLocation이 바뀔 때만 HTML 템플릿을 생성합니다.
+    // 💡 initialLocation이 바뀔 때만 HTML 템플릿 재생성
     const htmlSource = useMemo(() => {
         const template = `
             <!DOCTYPE html>
@@ -45,7 +50,7 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
                     function initMap() {
                         const container = document.getElementById('map');
                         const options = { 
-                            center: new kakao.maps.LatLng(33.5104, 126.5222), 
+                            center: new kakao.maps.LatLng(${initialLocation.lat}, ${initialLocation.lng}),
                             level: 5,
                             draggable: true,
                             scrollwheel: true
@@ -61,7 +66,8 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
 
                         kakao.maps.event.addListener(map, 'idle', function() {
                             sendBounds();
-                    }   
+                        });
+                    }
 
                     function sendBounds() {
                         const bounds = map.getBounds();
@@ -82,14 +88,14 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
                                 title: lot.name
                             });
                             
-                             kakao.maps.event.addListener(marker, 'click', function() {
+                            kakao.maps.event.addListener(marker, 'click', function() {
                                 window.ReactNativeWebView.postMessage(JSON.stringify({
                                     type: 'MARKER_CLICK',
                                     data: lot.id
                                 }));
                             });
-                             return marker;
-                          });
+                            return marker;
+                        });
                         clusterer.addMarkers(newMarkers);
                     };
                     window.onload = initMap;
@@ -97,9 +103,8 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
             </body>
             </html>
         `;
-        // 리렌더링 시 매번 새로운 객체가 들어가는 것을 방지
         return { html: template };
-    }, [initialLocation.lat, initialLocation.lng]); // 위경도가 바뀌지 않는 한 재사용
+    }, [initialLocation.lat, initialLocation.lng]);
 
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
@@ -119,7 +124,6 @@ export default function KakaoMap({ parkingLots, onBoundsChanged, initialLocation
             <NativeWebView
                 ref={webviewRef}
                 originWhitelist={["*"]}
-                // 💡 메모이제이션된 source 객체 주입
                 source={htmlSource}
                 onMessage={handleMessage}
                 javaScriptEnabled={true}

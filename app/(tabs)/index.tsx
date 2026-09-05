@@ -52,7 +52,7 @@ export default function MapScreen() {
                 }
             } catch (error) {
                 console.error("위치 가져오기 오류:", error);
-                if (isMounted) setInitialLocation({ lat: 33.5104, lng: 126.5222 });
+                if (isMounted) setInitialLocation({ lat: 37.5665, lng: 126.978 });
             }
         };
 
